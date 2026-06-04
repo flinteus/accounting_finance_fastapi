@@ -1,7 +1,9 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from decimal import Decimal
+from datetime import datetime
 
+from app.enum import CurrencyEnum
 from app.database import Base
 
 class User(Base):
@@ -20,3 +22,18 @@ class Wallet(Base):
     name: Mapped[str] 
     balanse: Mapped[Decimal]
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    
+    currency: Mapped[CurrencyEnum]
+    
+class Operation(Base):
+    
+    __tablename__ = "operations"
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    wallet_id: Mapped[int] = mapped_column(ForeignKey("wallets.id"))
+    type: Mapped[str]
+    amount: Mapped[Decimal]
+    currency: Mapped[CurrencyEnum]
+    category: Mapped[str | None] = mapped_column(default=None)
+    subcategory: Mapped[str | None] = mapped_column(default=None)
+    created_at:  Mapped[datetime] = mapped_column(default=lambda: datetime.now())
