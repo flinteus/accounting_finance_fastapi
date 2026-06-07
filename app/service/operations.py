@@ -6,6 +6,7 @@ from app.schemas import OperationRequest, OperationResponse
 from app.repository.wallets import get_all_wallets, add_income as add_income_db, is_wallet_exist, get_walled_balance_by_name, add_expense as add_expense_db, get_wallet_by_id
 from app.repository.operations import create_operation, get_operations_list as get_operations_from_db
 from app.models import User
+# from app.enum import OperationType
 
 def add_income(db: Session, current_user: User, operation: OperationRequest) -> OperationResponse:
 

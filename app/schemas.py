@@ -52,4 +52,4 @@ class OperationResponse(BaseModel):
     category: str | None
     subcategory: str | None
     created_at: datetime
-    
+       
