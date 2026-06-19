@@ -1,24 +1,19 @@
-"""pytest from AAA: Act"""
+"""pytest from AAA: Arrange, Act, Assert"""
 
 from decimal import Decimal
 
-from app.models import User, Wallet
+from app.models import User
+from app.enum import CurrencyEnum
 
-def test_add_expense_succes(db_session, client):
-    
-    user = User(login="test")
-    db_session.add(user)
-    db_session.flush()
-    wallet = Wallet(name="card", balanse=200, user_id=user.id)
-    db_session.add(wallet)
-    db_session.commit()
-    db_session.refresh(wallet)
+def test_add_expense_succes(user_with_wallet, client):
+    # Arrange
+    user, wallet = user_with_wallet
     
     #Act
     response = client.post(
         "/api/v1/operation/expense", 
         json={
-            "wallet_name": "card",
+            "wallet_name": wallet.name,
             "amount": 50.0,
             "description": "food"
         }, 
@@ -28,29 +23,28 @@ def test_add_expense_succes(db_session, client):
     # Assert
     
     assert response.status_code == 200
-    assert response.json()["msg"] == "Expense added"
-    assert response.json()["wallet"] == wallet.name
-    assert Decimal(str(response.json()["amount"])) == Decimal(50)
-    assert Decimal(str(response.json()["new_balanse"])) == Decimal(150)
-    assert response.json()["description"] == "food"
+    data = response.json()
     
-    
-def test_add_expense_negative_amount(db_session, client):
+    # Проверяем поля OperationResponse
+    assert data["wallet_id"] == wallet.id
+    assert data["type"] == "expense"
+    assert Decimal(str(data["amount"])) == Decimal(50.0)
+    assert data["currency"] == CurrencyEnum.RUB
+    assert data["category"] == "food"
+    assert "id" in data
+    assert "created_at" in data
+
+ 
+def test_add_expense_negative_amount(user_with_wallet, client):
     # Arrange
     
-    user = User(login="test")
-    db_session.add(user)
-    db_session.flush()
-    wallet = Wallet(name="card", balanse=200, user_id=user.id)
-    db_session.add(wallet)
-    db_session.commit()
-    db_session.refresh(wallet)
+    user, wallet = user_with_wallet
     
       #Act
     response = client.post(
         "/api/v1/operation/expense", 
         json={
-            "wallet_name": "card",
+            "wallet_name": wallet.name,
             "amount": -100.0,
             "description": "food"
         }, 
@@ -61,19 +55,12 @@ def test_add_expense_negative_amount(db_session, client):
     
     assert response.status_code == 422
     
-def test_add_expense_empty_name(db_session, client):
+def test_add_expense_empty_name(user_with_wallet, client):
     
     # Arrange
+    user, wallet = user_with_wallet 
     
-    user = User(login="test")
-    db_session.add(user)
-    db_session.flush()
-    wallet = Wallet(name="card", balanse=200, user_id=user.id)
-    db_session.add(wallet)
-    db_session.commit()
-    db_session.refresh(wallet)
-    
-      #Act
+    #Act
     response = client.post(
         "/api/v1/operation/expense", 
         json={
@@ -133,22 +120,15 @@ def test_add_expense_unauthorized(db_session, client):
     assert response.status_code == 401
     
     
-def test_add_expense_not_enough_money(db_session, client):
+def test_add_expense_not_enough_money(user_with_wallet, client):
     # Arrange
-    
-    user = User(login="test")
-    db_session.add(user)
-    db_session.flush()
-    wallet = Wallet(name="card", balanse=200, user_id=user.id)
-    db_session.add(wallet)
-    db_session.commit()
-    db_session.refresh(wallet)
+    user, wallet = user_with_wallet
     
     #Act
     response = client.post(
         "/api/v1/operation/expense", 
         json={
-            "wallet_name": "card",
+            "wallet_name": wallet.name,
             "amount": 250.0,
             "description": "food"
         }, 
@@ -159,7 +139,8 @@ def test_add_expense_not_enough_money(db_session, client):
     
     assert response.status_code == 400
     
-    
-# TODO: вынести в фикстуры Arrange блоки(создание пользователя и кошелька)
+#TODO: Попытка создать кошелёк с уже существующим именем
+#TODO:Попытка получить баланс несуществующего кошелька
+
 # TODO: покрыть тестами остальной функционал
     

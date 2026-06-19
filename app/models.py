@@ -23,7 +23,7 @@ class Wallet(Base):
     balanse: Mapped[Decimal]
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     
-    currency: Mapped[CurrencyEnum]
+    currency: Mapped[CurrencyEnum] = mapped_column(default=CurrencyEnum.RUB)
     
 class Operation(Base):
     

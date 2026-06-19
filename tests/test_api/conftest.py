@@ -11,10 +11,11 @@ from fastapi.testclient import TestClient
 import pytest
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base, Session
+from sqlalchemy.orm import sessionmaker, Session
 from main import app
 from app.dependecy import get_db
 from app.database import Base
+from app.models import User, Wallet
 
 
 
@@ -63,3 +64,18 @@ def db_session():
         
     finally:
         db.close()
+
+@pytest.fixture
+def user_with_wallet(db_session):
+
+    user = User(login="test")
+    db_session.add(user)
+    db_session.flush()
+    
+    wallet = Wallet(name="card", balanse=200, user_id=user.id)
+    db_session.add(wallet)
+    db_session.commit()
+    db_session.refresh(wallet)
+    
+    return user, wallet
+    
