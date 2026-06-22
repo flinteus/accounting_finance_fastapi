@@ -9,9 +9,9 @@ from app.models import User
 router = APIRouter()
 
 @router.get("/balanse")
-def get_balanse(walled_name: str | None = None, db: Session = Depends(get_db), 
+async def get_balanse(db: Session = Depends(get_db), 
                 current_user: User = Depends(get_current_user)):
-    return wallets_service.get_wallets(db, current_user, walled_name)
+    return await wallets_service.get_total_balance(db, current_user)
   
 @router.post("/wallets", response_model=WalletResponse)
 def create_wallet(wallet_request: CreateWalletRequest, db: Session = Depends(get_db),
@@ -19,3 +19,6 @@ def create_wallet(wallet_request: CreateWalletRequest, db: Session = Depends(get
     
     return wallets_service.create_wallet(db, current_user, wallet_request)
     
+@router.get("/wallets", response_model=list[WalletResponse])
+def get_all_wallets(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+        return wallets_service.get_all_wallets(db, current_user)

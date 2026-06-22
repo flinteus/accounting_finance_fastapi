@@ -73,3 +73,5 @@ class OperationResponse(BaseModel):
     subcategory: str | None
     created_at: datetime
        
+class TotalBalanse(BaseModel):
+    total_balance: Decimal
